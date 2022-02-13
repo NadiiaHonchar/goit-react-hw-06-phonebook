@@ -1,15 +1,31 @@
 import PropTypes from "prop-types";
+import { useSelector, useDispatch } from "react-redux";
 import style from "./ContactList.module.css";
-import {connect} from 'react-redux';
-import {delContact} from '../../redux/actions';
+import { delContact } from "../../redux/actions";
 import ElementContacts from "../ElementContacts";
 
-const ContactList = ({ contacts, onDelContact }) => {
+const ContactList = () => {
+  const getVisibleContacts = (allContacts, filter) => {
+    const normalizedFilter = filter.toLowerCase();
+    return allContacts.filter(({ name }) =>
+      name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  const contacts = useSelector((state) =>
+    getVisibleContacts(state.contacts.items, state.contacts.filter)
+  );
+
+  const dispath = useDispatch();
+
   return (
     <ul className={style.ulStyle}>
       {contacts.map((contact) => (
         <li key={contact.id}>
-          <ElementContacts contacts={contact} onDelContact={onDelContact} />
+          <ElementContacts
+            contacts={contact}
+            onDelContact={() => dispath(delContact(contact.id))}
+          />
         </li>
       ))}
     </ul>
@@ -24,22 +40,6 @@ ContactList.propTypes = {
       number: PropTypes.string.isRequired,
     })
   ),
-  onDelContact: PropTypes.func.isRequired,
 };
 
-const getVisibleContacts =(allContacts, filter)=>{  
-  const normalizedFilter = filter.toLowerCase();
-  return allContacts.filter(({name}) =>
-  name.toLowerCase().includes(normalizedFilter)
-    );
-}
-
-const mapStateToProps = ({contacts:{ filter, items}})=>({
-  contacts : getVisibleContacts(items, filter),
-})
-
-const mapDispatchToProps = dispath =>({
-  onDelContact: (id) => dispath(delContact(id)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ContactList);
+export default ContactList;
